@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnapS - 통계 분석</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #e74c3c;
+            --text-color: #333;
+            --background-color: #f4f4f4;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        header {
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 1rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        nav a {
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            margin: 0 0.5rem;
+            transition: color 0.3s;
+        }
+
+        nav a:hover, nav a.active {
+            color: var(--primary-color);
+        }
+
+        main {
+            padding: 2rem;
+            padding-top: 5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            margin-bottom: 2rem;
+        }
+
+        .instagram-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .stat-item {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-item h4 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+
+        .stat-item p {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text-color);
+            margin: 1rem 0;
+        }
+
+        .stat-item ul {
+            list-style-type: none;
+            padding: 0;
+            text-align: left;
+        }
+
+        .stat-item li {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        #error-message {
+            color: var(--secondary-color);
+            text-align: center;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .ai-feedback {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .ai-feedback h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            nav {
+                margin-top: 1rem;
+            }
+
+            nav a {
+                display: block;
+                margin: 0.5rem 0;
+            }
+        }
+
+        .thread-stats {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 2rem;
+        }
+
+        .chart-container {
+            margin-top: 2rem;
+            height: 400px;
+        }
+
+        /* SNS 성과 섹션 스타일 */
+        .sns-performance-section {
+            margin-top: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .sns-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .sns-card {
+            background: linear-gradient(145deg, #ffffff, #f5f5f5);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .sns-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .sns-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #eee;
+        }
+
+        .sns-header i {
+            font-size: 1.8rem;
+            margin-right: 1rem;
+        }
+
+        .instagram .sns-header i { color: #E1306C; }
+        .threads .sns-header i { color: #000000; }
+        .facebook .sns-header i { color: #1877F2; }
+
+        .sns-header h3 {
+            margin: 0;
+            color: var(--text-color);
+            font-size: 1.4rem;
+        }
+
+        .sns-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .metric-value {
+            display: block;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .sns-comparison-chart {
+            margin-top: 3rem;
+            padding: 2rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        @media (max-width: 768px) {
+            .sns-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 통계 분석 보고서 받기 섹션 스타일 */
+        .report-section {
+            text-align: center;
+            margin: 40px 0;
+            position: relative;
+            z-index: 10;
+        }
+
+        .report-button, .submit-report-button {
+            padding: 20px 40px;
+            font-size: 24px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin: 20px 0;
+        }
+
+        .report-button:hover, .submit-report-button:hover {
+            background-color: #45a049;
+        }
+
+        /* 이메일 입력 폼 스타일 */
+        .email-form {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .email-form input[type="email"] {
+            padding: 10px;
+            font-size: 18px;
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .email-form input[type="submit"] {
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #008CBA;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .email-form input[type="submit"]:hover {
+            background-color: #007B9E;
+        }
+
+        /* 로딩 메시지 및 스피너 스타일 */
+        .loading-section {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .loading-message {
+            font-size: 20px;
+            color: var(--primary-color);
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 반응형 디자인 개선 */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            nav {
+                margin-top: 1rem;
+            }
+
+            nav a {
+                display: block;
+                margin: 0.5rem 0;
+            }
+
+            .sns-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-item, .thread-stats, .ai-feedback, .report-section {
+                padding: 1.5rem;
+            }
+
+            .email-form input[type="email"] {
+                width: 80%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">SnapS</div>
+            <nav>
+                <a href="/">홈</a>
+                <a href="/content-conversion">콘텐츠 변환</a>
+                <a href="/content-management">콘텐츠 관리</a>
+                <a href="/statistics" class="active">통계 분석</a>
+                <a href="/my-page">마이페이지</a>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <h2>통계 분석</h2>
+        <div class="instagram-stats" id="instagramStats"></div>
+        <div id="error-message"></div>
+        <div class="ai-feedback" id="aiFeedback"></div>
+        <div class="sns-performance-section">
+            <h2>SNS 채널별 성과</h2>
+            <div class="sns-grid">
+                <div class="sns-card instagram">
+                    <div class="sns-header">
+                        <i class="fab fa-instagram"></i>
+                        <h3>Instagram</h3>
+                    </div>
+                    <div class="sns-metrics">
+                        <div class="metric">
+                            <span class="metric-value" id="instaFollowers">2,345</span>
+                            <span class="metric-label">팔로워</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-value" id="instaEngagement">4.8%</span>
+                            <span class="metric-label">참여율</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-value" id="instaPosts">150</span>
+                            <span class="metric-label">게시물</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sns-card threads">
+                    <div class="sns-header">
+                        <i class="fab fa-threads"></i>
+                        <h3>Threads</h3>
+                    </div>
+                    <div class="sns-metrics">
+                        <div class="metric">
+                            <span class="metric-value" id="threadFollowers">1,234</span>
+                            <span class="metric-label">팔로워</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-value" id="threadEngagement">3.2%</span>
+                            <span class="metric-label">참여율</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-value" id="threadPosts">85</span>
+                            <span class="metric-label">게시물</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sns-card facebook">
+                    <div class="sns-header">
+                        <i class="fab fa-facebook"></i>
+                        <h3>Facebook</h3>
+                    </div>
+                    <div class="sns-metrics">
+                        <div class="metric">
+                            <span class="metric-value" id="fbFollowers">3,456</span>
+                            <span class="metric-label">팔로워</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-value" id="fbEngagement">2.9%</span>
+                            <span class="metric-label">참여율</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-value" id="fbPosts">120</span>
+                            <span class="metric-label">게시물</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-container sns-comparison-chart">
+                <canvas id="snsComparisonChart"></canvas>
+            </div>
+        </div>
+        <div class="stats-section thread-stats">
+            <h2>Thread 통계</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>게시물 성과</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">총 게시물</span>
+                        <span class="stat-value" id="threadTotalPosts">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">총 좋아요</span>
+                        <span class="stat-value" id="threadTotalLikes">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">총 댓글</span>
+                        <span class="stat-value" id="threadTotalReplies">0</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <h3>참여도 분석</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">평균 좋아요</span>
+                        <span class="stat-value" id="threadAvgLikes">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">평균 댓글</span>
+                        <span class="stat-value" id="threadAvgReplies">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="threadEngagementChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 통계 분석 보고서 받기 섹션 -->
+        <div class="report-section">
+            <!-- 첫 번째 단계: 초기 버튼 -->
+            <button class="report-button" id="get-report-btn">통계 분석 보고서 받기</button>
+
+            <!-- 두 번째 단계: 이메일 입력 폼 -->
+            <form class="email-form" id="email-form">
+                <input type="email" id="user-email" placeholder="이메일 주소를 입력하세요" required>
+                <input type="submit" class="submit-report-button" value="보고서 받기">
+            </form>
+
+            <!-- 로딩 메시지 및 스피너 -->
+            <div class="loading-section" id="loading-section">
+                <div class="spinner"></div>
+                <div class="loading-message" id="loading-message">sns 정보를 불러오는 중...</div>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2024 SnapS. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            displayStats();
+            loadThreadStats();
+            createSnsComparisonChart();
+        });
+
+        function displayStats() {
+            const statsContainer = document.getElementById('instagramStats');
+            
+            // 임의의 데이터
+            const data = {
+                total_posts: 150,
+                post_types: {
+                    '이미지': 80,
+                    '비디오': 40,
+                    '캐러셀': 20,
+                    'IGTV': 10
+                },
+                popular_hashtags: [
+                    ['UXDesign', 45],
+                    ['UserExperience', 38],
+                    ['DesignThinking', 30],
+                    ['UI', 25],
+                    ['ProductDesign', 20]
+                ],
+                peak_posting_hours: [
+                    [9, 15],
+                    [12, 20],
+                    [15, 18],
+                    [18, 25],
+                    [21, 12]
+                ]
+            };
+
+            statsContainer.appendChild(createStatItem('총 게시물', data.total_posts));
+
+            const postTypesItem = document.createElement('div');
+            postTypesItem.className = 'stat-item';
+            postTypesItem.innerHTML = '<h4>게시물 유형</h4><canvas id="postTypesChart"></canvas>';
+            statsContainer.appendChild(postTypesItem);
+
+            new Chart('postTypesChart', {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(data.post_types),
+                    datasets: [{
+                        data: Object.values(data.post_types),
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    }
+                }
+            });
+
+            statsContainer.appendChild(createListStatItem('인기 해시태그', data.popular_hashtags.map(tag => `#${tag[0]} (${tag[1]}회)`)));
+
+            const peakHoursItem = document.createElement('div');
+            peakHoursItem.className = 'stat-item';
+            peakHoursItem.innerHTML = '<h4>주요 게시 시간대</h4><canvas id="peakHoursChart"></canvas>';
+            statsContainer.appendChild(peakHoursItem);
+
+            new Chart('peakHoursChart', {
+                type: 'bar',
+                data: {
+                    labels: data.peak_posting_hours.map(hour => `${hour[0]}시`),
+                    datasets: [{
+                        label: '게시 횟수',
+                        data: data.peak_posting_hours.map(hour => hour[1]),
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            displayAIFeedback();
+        }
+
+        function createStatItem(label, value) {
+            const statItem = document.createElement('div');
+            statItem.className = 'stat-item';
+            statItem.innerHTML = `<h4>${label}</h4><p>${value}</p>`;
+            return statItem;
+        }
+
+        function createListStatItem(label, items) {
+            const statItem = document.createElement('div');
+            statItem.className = 'stat-item';
+            statItem.innerHTML = `<h4>${label}</h4>`;
+            const list = document.createElement('ul');
+            items.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                list.appendChild(li);
+            });
+            statItem.appendChild(list);
+            return statItem;
+        }
+
+        function displayAIFeedback() {
+            const aiFeedbackContainer = document.getElementById('aiFeedback');
+            const feedback = `
+                <h3>AI 피드백</h3>
+                <p>UX 디자이너님의 SNS 계정 분석 결과입니다:</p>
+                <ul>
+                    <li>콘텐츠 다양성: 이미지, 비디오, 캐러셀 등 다양한 형식의 콘텐츠를 게시하고 있어 팔로워들의 관심을 유지하는데 도움이 됩니다.</li>
+                    <li>해시태그 전략: UX 관련 해시태그를 효과적으로 사용하고 있습니다. #UXDesign과 #UserExperience가 가장 인기 있는 것으로 보아, 이 주제에 대한 콘텐츠를 더 강화하는 것이 좋겠습니다.</li>
+                    <li>게시 시간: 오후 6시경에 가장 많은 게시물을 올리고 있는데, 이는 팔로워들의 동이 가장 활발한 시간대일 가능성이 높습니다. 이 시간대를 중심으로 게시 일정을 조정해보는 것이 좋겠습니다.</li>
+                    <li>개선 제안: IGTV 콘텐츠의 비중이 낮은 편입니다. UX 디자인 프로세스나 케이스 스터디를 자세히 다루는 긴 형식의 비디오 콘텐츠를 더 제작해보는 것은 어떨까요?</li>
+                </ul>
+                <p>전반적으로 UX 디자인 전문가로서의 브랜딩이 잘 되고 있습니다. 앞으로도 실용적인 UX 팁과 인사이트를 공유하면서, 동시에 개인적인 디자인 여정도 보여주는 균형 잡힌 콘텐츠 전략을 유지하시기 바랍니다.</p>
+            `;
+            aiFeedbackContainer.innerHTML = feedback;
+        }
+
+        async function loadThreadStats() {
+            try {
+                const response = await fetch('/thread_statistics');
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Thread 통계를 불러오는데 실패했습니다.');
+                }
+                
+                // 기본 통계 업데이트
+                document.getElementById('threadTotalPosts').textContent = data.total_posts || '0';
+                document.getElementById('threadTotalLikes').textContent = data.total_likes || '0';
+                document.getElementById('threadTotalReplies').textContent = data.total_replies || '0';
+                document.getElementById('threadAvgLikes').textContent = data.avg_likes || '0';
+                document.getElementById('threadAvgReplies').textContent = data.avg_replies || '0';
+                
+                // 차트 생성
+                if (data.dates && data.dates.length > 0) {
+                    const ctx = document.getElementById('threadEngagementChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.dates,
+                            datasets: [{
+                                label: '좋아요',
+                                data: data.likes_data || [],
+                                borderColor: '#1DA1F2',
+                                tension: 0.4,
+                                fill: false
+                            }, {
+                                label: '댓글',
+                                data: data.replies_data || [],
+                                borderColor: '#17BF63',
+                                tension: 0.4,
+                                fill: false
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: '일별 참여도 추이'
+                                },
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: '수치'
+                                    }
+                                },
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: '날짜'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error('Thread 통계 로딩 오류:', err);
+                const threadStats = document.querySelector('.thread-stats');
+                threadStats.innerHTML += `
+                    <div class="error-message">
+                        Thread 통계를 불러오는데 실패했습니다: ${err.message}
+                    </div>
+                `;
+            }
+        }
+
+        function createSnsComparisonChart() {
+            const ctx = document.getElementById('snsComparisonChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Instagram', 'Threads', 'Facebook'],
+                    datasets: [{
+                        label: '팔로워 수',
+                        data: [2345, 1234, 3456],
+                        backgroundColor: ['#E1306C', '#000000', '#1877F2'],
+                        borderColor: ['#E1306C', '#000000', '#1877F2'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'SNS 채널별 팔로워 비교'
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '팔로워 수'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 초기 보고서 받기 버튼 클릭 시 이메일 입력 폼 표시
+        document.getElementById('get-report-btn').addEventListener('click', function() {
+            const initialButton = this;
+            const emailForm = document.getElementById('email-form');
+
+            // 버튼 숨기기
+            initialButton.style.display = 'none';
+
+            // 이메일 입력 폼 표시
+            emailForm.style.display = 'block';
+        });
+
+        document.getElementById('email-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // 폼 제출 기본 동작 방지
+
+            const email = document.getElementById('user-email').value;
+            const submitButton = document.querySelector('.submit-report-button');
+            const loadingSection = document.getElementById('loading-section');
+
+            if (validateEmail(email)) {
+                // 이메일이 유효하면 로딩 메시지 및 스피너 표시
+                loadingSection.style.display = 'block';
+                submitButton.disabled = true;
+
+                // 4초 딜레이 후 로딩 메시지 및 스피너 숨기기
+                setTimeout(function() {
+                    loadingSection.style.display = 'none';
+                    window.location.href = 'https://silmmelier.kr/snaps/report.pdf';
+                }, 4000);
+            } else {
+                alert('유효한 이메일 주소를 입력하세요.');
+            }
+        });
+
+        // 이메일 형식 검증 함수
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(String(email).toLowerCase());
+        }
+    </script>
+</body>
+</html>

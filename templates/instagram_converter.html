@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnapS - 인스타그램 게시물 변환기</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0095f6;
+            --secondary-color: #00376b;
+            --background-color: #fafafa;
+            --border-color: #dbdbdb;
+            --text-color: #262626;
+            --error-color: #ed4956;
+            --success-color: #2ecc71;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        .header-content {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        .header-icon {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            color: var(--text-color);
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 80px auto 0;
+            padding: 2rem;
+        }
+
+        .action-bar {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #selected-post-info {
+            color: var(--secondary-color);
+            font-weight: 500;
+        }
+
+        #gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 1rem 0;
+        }
+
+        .post {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .post:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .post-images {
+            position: relative;
+            padding-top: 100%;
+            background: #f8f8f8;
+        }
+
+        .post-images img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .post-checkbox {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 24px;
+            height: 24px;
+            border: 2px solid white;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .post-checkbox.checked {
+            background: var(--primary-color);
+            border-color: white;
+        }
+
+        .post-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 14px;
+        }
+
+        .post-caption {
+            padding: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-color);
+            border-top: 1px solid var(--border-color);
+        }
+
+        button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #0084d4;
+            transform: translateY(-2px);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 2rem;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 12px;
+            position: relative;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .modal.show .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .close {
+            position: absolute;
+            right: 1.5rem;
+            top: 1.5rem;
+            font-size: 1.5rem;
+            color: var(--text-color);
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+
+        .close:hover {
+            opacity: 1;
+        }
+
+        .conversion-item {
+            min-width: 300px;
+            width: 300px;
+            margin-bottom: 0;
+            scroll-snap-align: start;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+
+        .conversion-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .conversion-item h3 {
+            margin: 0;
+            padding: 1rem 1.5rem;
+            font-size: 1.2rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .conversion-item p {
+            padding: 1.5rem;
+            margin: 0;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #262626;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        /* Facebook 스타일 */
+        .conversion-item.facebook h3 {
+            background: #1877f2;
+        }
+
+        .conversion-item.facebook h3::before {
+            content: "📘";
+        }
+
+        .conversion-item.facebook .upload-btn {
+            background: #1877f2;
+        }
+
+        .conversion-item.facebook .upload-btn:hover {
+            background: #166fe5;
+        }
+
+        /* Thread 스타일 */
+        .conversion-item.thread h3 {
+            background: #000000;
+        }
+
+        .conversion-item.thread h3::before {
+            content: "🧵";
+        }
+
+        .conversion-item.thread .upload-btn {
+            background: #000000;
+        }
+
+        .conversion-item.thread .upload-btn:hover {
+            background: #1a1a1a;
+        }
+
+        /* 네이버 블로그 스타일 */
+        .conversion-item.naver-blog h3 {
+            background: #03c75a;
+        }
+
+        .conversion-item.naver-blog h3::before {
+            content: "📗";
+        }
+
+        .conversion-item.naver-blog .upload-btn {
+            background: #03c75a;
+        }
+
+        .conversion-item.naver-blog .upload-btn:hover {
+            background: #02b351;
+        }
+
+        /* 공통 버튼 스타일 */
+        .conversion-item .upload-btn {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .conversion-item .upload-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* 결과 컨테이너 스타일 */
+        #conversion-result {
+            display: flex;
+            gap: 1.5rem;
+            padding: 1rem;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* 스크롤바 스타일 */
+        #conversion-result::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        #conversion-result::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        #conversion-result::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        #conversion-result::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #error {
+            background: #fef2f2;
+            color: var(--error-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            main {
+                padding: 1rem;
+            }
+
+            .action-bar {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            #gallery {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 1rem;
+            }
+
+            .modal-content {
+                margin: 10% auto;
+                padding: 1.5rem;
+                width: 95%;
+            }
+        }
+
+        /* 네비게이션 바 추가 */
+        nav {
+            margin-left: auto;
+            display: flex;
+            gap: 1rem;
+        }
+
+        nav a {
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        nav a:hover {
+            background: var(--background-color);
+            color: var(--primary-color);
+        }
+
+        /* 갤러리 개선 */
+        #gallery {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        #gallery.loaded {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .post {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            background: white;
+        }
+
+        .post::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .post:hover::before {
+            opacity: 1;
+        }
+
+        /* 로딩 상태 개선 */
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 1000;
+        }
+
+        #loading.visible {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* 변환 결과 모달 개선 */
+        .conversion-item {
+            margin-bottom: 1.5rem;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .conversion-item h3 {
+            margin: 0;
+            padding: 1rem;
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .conversion-item p {
+            padding: 1.5rem;
+            margin: 0;
+            background: white;
+            white-space: pre-wrap;
+        }
+
+        .conversion-item .upload-btn {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            background: var(--secondary-color);
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .conversion-item .upload-btn:hover {
+            background: var(--primary-color);
+        }
+
+        /* 플랫폼별 스타일 */
+        .thread {
+            background: linear-gradient(145deg, #000000, #1a1a1a);
+        }
+
+        .facebook {
+            background: linear-gradient(145deg, #1877f2, #166fe5);
+        }
+
+        .naver-blog {
+            background: linear-gradient(145deg, #03c75a, #02b351);
+        }
+
+        .conversion-item.error {
+            border-left: 4px solid var(--error-color);
+            background: #fff5f5;
+        }
+
+        .conversion-item.error h3 {
+            color: var(--error-color);
+            background: #fef2f2;
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 0.9rem;
+        }
+
+        #conversion-result {
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="header-icon">📸➡️🌐</div>
+            <h1>인스타그램 게시물 변환기</h1>
+        </div>
+    </header>
+
+    <main>
+        <div class="action-bar">
+            <div id="selected-post-info">선택된 게시물이 없습니다.</div>
+            <button id="convert">변환하기</button>
+        </div>
+
+        <div id="loading">불러오는 중...</div>
+        <div id="error"></div>
+
+        <div id="gallery"></div>
+    </main>
+
+    <div id="conversion-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>변환 결과</h2>
+            <div id="conversion-loading" class="loading-spinner" style="display: none;"></div>
+            <div id="conversion-result"></div>
+        </div>
+    </div>
+
+    <div id="post-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modal-content"></div>
+        </div>
+    </div>
+
+    <div class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <script>
+        let selectedPost = null;
+
+        async function fetchPosts() {
+            showLoading();
+            const gallery = document.getElementById('gallery');
+            const error = document.getElementById('error');
+
+            try {
+                const response = await fetch('/fetch_posts', { 
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(await response.text());
+                }
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                gallery.innerHTML = '';
+                
+                if (data.posts && data.posts.length > 0) {
+                    data.posts.forEach(post => {
+                        const postElement = createPostElement(post);
+                        gallery.appendChild(postElement);
+                    });
+                    gallery.classList.add('loaded');
+                } else {
+                    gallery.innerHTML = '<div class="no-posts">게시물이 없습니다.</div>';
+                }
+            } catch (err) {
+                console.error('Error:', err);
+                error.textContent = err.message;
+                error.style.display = 'block';
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function selectPost(post, checkbox) {
+            const selectedPostInfo = document.getElementById('selected-post-info');
+            if (selectedPost === post) {
+                selectedPost = null;
+                checkbox.classList.remove('checked');
+                selectedPostInfo.textContent = '선택된 게시물이 없습니다.';
+            } else {
+                if (selectedPost) {
+                    const previousCheckbox = document.querySelector('.post-checkbox.checked');
+                    if (previousCheckbox) {
+                        previousCheckbox.classList.remove('checked');
+                    }
+                }
+                selectedPost = post;
+                checkbox.classList.add('checked');
+                selectedPostInfo.textContent = `선택된 게시물: ${post.caption ? post.caption.substring(0, 50) + '...' : '캡션 없음'}`;
+            }
+        }
+
+        function showPostDetails(post) {
+            const modal = document.getElementById('post-modal');
+            const modalContent = document.getElementById('modal-content');
+
+            let imageHtml = '';
+            if (post.media_urls && post.media_urls.length > 0) {
+                imageHtml = `<img src="${post.media_urls[0]}" alt="Instagram post" style="max-width: 100%; height: auto;">`;
+            } else if (post.media_url) {  // media_url도 확인
+                imageHtml = `<img src="${post.media_url}" alt="Instagram post" style="max-width: 100%; height: auto;">`;
+            }
+
+            modalContent.innerHTML = `
+                ${imageHtml}
+                <p>${post.caption || '캡션 없음'}</p>
+                <button onclick='selectPostFromModal(${JSON.stringify(post).replace(/'/g, "&#39;")})'>변환용으로 선택</button>
+            `;
+
+            modal.style.display = 'block';
+            setTimeout(() => modal.classList.add('show'), 10);
+        }
+
+        function selectPostFromModal(post) {
+            const checkbox = document.querySelector(`.post-checkbox`);
+            selectPost(post, checkbox);
+            document.getElementById('post-modal').style.display = 'none';
+        }
+
+        async function convertPost() {
+            if (!selectedPost) {
+                alert('먼저 변환할 게시물을 선택해주세요.');
+                return;
+            }
+
+            const conversionModal = document.getElementById('conversion-modal');
+            const conversionResult = document.getElementById('conversion-result');
+            const conversionLoading = document.getElementById('conversion-loading');
+
+            conversionModal.style.display = 'block';
+            setTimeout(() => conversionModal.classList.add('show'), 10);
+            
+            conversionLoading.style.display = 'block';
+            conversionResult.innerHTML = '';
+
+            try {
+                const platforms = ['Facebook', 'Thread', '네이버 블로그'];
+                for (const platform of platforms) {
+                    const response = await fetch('/convert', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            caption: selectedPost.caption || '',
+                            targetPlatform: platform,
+                            hasImage: Boolean(selectedPost.media_urls?.length > 0 || selectedPost.media_url),
+                        }),
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(await response.text() || '게시물 변환에 실패했습니다');
+                    }
+
+                    const data = await response.json();
+                    if (!data || !data.ragConvertedPost) {
+                        throw new Error('변환 결과가 올바르지 않습니다');
+                    }
+
+                    const conversionItem = document.createElement('div');
+                    conversionItem.className = 'conversion-item';
+                    
+                    if (platform === 'Thread') {
+                        conversionItem.classList.add('thread');
+                    } else if (platform === '네이버 블로그') {
+                        conversionItem.classList.add('naver-blog');
+                    }
+                    
+                    conversionItem.innerHTML = `
+                        <h3>${platform}</h3>
+                        <p>${data.ragConvertedPost}</p>
+                        <button class="upload-btn" onclick="uploadPost('${platform}')">업로드</button>
+                    `;
+                    conversionResult.appendChild(conversionItem);
+                }
+            } catch (err) {
+                console.error('게시물 변환 오류:', err);
+                alert(`게시물 변환 오류: ${err.message}`);
+                hideModal('conversion-modal');
+            } finally {
+                conversionLoading.style.display = 'none';
+            }
+        }
+
+        function uploadPost(platform) {
+            if (platform === 'Thread') {
+                postToThread();
+            } else {
+                alert(`${platform} 업로드 기능은 아직 개발 중입니다.`);
+            }
+        }
+        
+        function showLoading() {
+            const loading = document.getElementById('loading');
+            loading.classList.add('visible');
+            document.querySelector('.loading-overlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            const loading = document.getElementById('loading');
+            loading.classList.remove('visible');
+            document.querySelector('.loading-overlay').style.display = 'none';
+        }
+
+        async function postToThread() {
+            const threadItem = Array.from(document.querySelectorAll('.conversion-item')).find(item => 
+                item.querySelector('h3').textContent === 'Thread'
+            );
+            
+            if (!threadItem) {
+                alert('Thread 변환 결과를 찾을 수 없습니다.');
+                return;
+            }
+            
+            const threadContent = threadItem.querySelector('p').textContent;
+            showLoading();
+            
+            try {
+                const response = await fetch('/upload_to_thread', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        content: threadContent,
+                        media_type: 'TEXT',
+                        user_id: "28229663363291121"  // 고정된 user_id 사용
+                    }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Thread에 업로드하는데 실패했습니다');
+                }
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('Thread에 성공적으로 업로드되었습니다!');
+                } else {
+                    throw new Error(data.error || '알 수 없는 오류가 발생했습니다');
+                }
+            } catch (err) {
+                console.error('Thread 업로드 오류:', err);
+                if (err.message === "Thread 계정이 연동되어 있지 않습니다") {
+                    alert('Thread 계정을 먼저 연동해주세요.');
+                } else {
+                    alert(`Thread 업로드 오류: ${err.message}`);
+                }
+            } finally {
+                hideLoading();
+            }
+        }
+
+        document.getElementById('convert').addEventListener('click', convertPost);
+
+        const modals = document.getElementsByClassName('modal');
+        const closes = document.getElementsByClassName('close');
+
+        for (let i = 0; i < closes.length; i++) {
+            closes[i].onclick = function() {
+                modals[i].style.display = "none";
+            }
+        }
+
+        window.onclick = function(event) {
+            for (let i = 0; i < modals.length; i++) {
+                if (event.target == modals[i]) {
+                    modals[i].style.display = "none";
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchPosts);
+
+        // 게시물 요소 생성 함수
+        function createPostElement(post) {
+            const postElement = document.createElement('div');
+            postElement.className = 'post';
+
+            const imageUrl = post.media_url || '/static/placeholder.png';
+            
+            postElement.innerHTML = `
+                <div class="post-images">
+                    <img src="${imageUrl}" alt="Instagram post" onerror="this.src='/static/placeholder.png';">
+                    <div class="post-checkbox"></div>
+                </div>
+                <div class="post-caption">${post.caption ? post.caption.substring(0, 50) + '...' : '캡션 없음'}</div>
+            `;
+
+            const checkbox = postElement.querySelector('.post-checkbox');
+            checkbox.addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectPost(post, checkbox);
+            });
+
+            postElement.addEventListener('click', () => showPostDetails(post));
+
+            return postElement;
+        }
+
+        // 모달 애니메이션 개선
+        function showModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'block';
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
+        }
+
+        function hideModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+    </script>
+</body>
+</html>

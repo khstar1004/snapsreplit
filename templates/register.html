@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnapS - 회원가입</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #e74c3c;
+            --text-color: #333;
+            --background-color: #f4f4f4;
+            --success-color: #2ecc71;
+            --border-color: #e1e1e1;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f6f8fa 0%, #f1f4f6 100%);
+            min-height: 100vh;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .container {
+            max-width: 380px;  /* 더 좁게 조정 */
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .register-container {
+            background: #fff;
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            margin-top: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 상단 장식 요소 추가 */
+        .register-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+        }
+
+        .register-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: var(--text-color);
+            text-align: center;
+            position: relative;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #666;
+            transition: color 0.2s;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 0.9375rem;
+            transition: all 0.2s;
+            background-color: #f8f9fa;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            background-color: #fff;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            outline: none;
+        }
+
+        /* 입력 필드 아이콘 스타일 */
+        .input-icon {
+            position: absolute;
+            right: 12px;
+            top: 38px;
+            color: #adb5bd;
+            transition: color 0.2s;
+        }
+
+        .form-group input:focus + .input-icon {
+            color: var(--primary-color);
+        }
+
+        /* 비밀번호 강도 표시 개선 */
+        .password-strength {
+            margin-top: 0.5rem;
+        }
+
+        .strength-meter {
+            height: 4px;
+            background: #eee;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .strength-meter div {
+            height: 100%;
+            width: 0;
+            transition: all 0.3s ease;
+        }
+
+        .weak { background-color: var(--secondary-color); }
+        .medium { background-color: #f1c40f; }
+        .strong { background-color: var(--success-color); }
+
+        /* 약관 동의 섹션 개선 */
+        .terms {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .terms label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .terms input[type="checkbox"] {
+            width: 1.125rem;
+            height: 1.125rem;
+            border-radius: 4px;
+            border: 1.5px solid var(--border-color);
+            appearance: none;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .terms input[type="checkbox"]:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .terms input[type="checkbox"]:checked::after {
+            content: '✓';
+            position: absolute;
+            color: white;
+            font-size: 0.75rem;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            background: var(--primary-color);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 1rem;
+        }
+
+        button[type="submit"]:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.875rem;
+            color: #666;
+        }
+
+        .login-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* 반응형 디자인 개선 */
+        @media (max-width: 480px) {
+            .container {
+                padding: 16px;
+            }
+
+            .register-container {
+                padding: 1.5rem;
+                margin-top: 2rem;
+            }
+
+            .register-title {
+                font-size: 22px;
+            }
+        }
+
+        /* 네비게이션 바 스타일 개선 */
+        .header {
+            background-color: rgba(255, 255, 255, 0.98);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.05);
+            padding: 1rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 1.5rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            transition: transform 0.2s;
+        }
+
+        .logo:hover {
+            transform: translateY(-1px);
+        }
+
+        .logo-icon {
+            font-size: 1.75rem;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .nav-link {
+            color: #666;
+            text-decoration: none;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+
+        .nav-link.home {
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .nav-link.home:hover {
+            transform: translateX(-2px);
+        }
+
+        @media (max-width: 480px) {
+            .header-content {
+                padding: 0 1rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+            }
+
+            .nav-link span {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="/" class="logo">
+                <span class="logo-icon">📱</span>
+                <span>SnapS</span>
+            </a>
+            <nav class="nav-links">
+                <a href="/" class="nav-link home">
+                    <span>←</span>
+                    <span>홈으로</span>
+                </a>
+                <a href="/login" class="nav-link">로그인</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="register-container">
+            <h1 class="register-title">회원가입</h1>
+            <form id="registerForm" onsubmit="return handleRegister(event)">
+                <div class="form-group">
+                    <label for="username">사용자 이름</label>
+                    <input type="text" id="username" name="username" required>
+                    <div class="error" id="usernameError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">이메일</label>
+                    <input type="email" id="email" name="email" required>
+                    <span class="input-icon">✉️</span>
+                    <div class="error" id="emailError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">비밀번호</label>
+                    <input type="password" id="password" name="password" required>
+                    <span class="input-icon">🔒</span>
+                    <div class="password-strength">
+                        <div class="strength-meter">
+                            <div id="strengthMeter"></div>
+                        </div>
+                    </div>
+                    <div class="error" id="passwordError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password">비밀번호 확인</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required>
+                    <div class="error" id="confirmPasswordError"></div>
+                </div>
+
+                <div class="terms">
+                    <label>
+                        <input type="checkbox" id="terms" name="terms" required>
+                        <span>이용약관 및 개인정보 처리방침에 동의합니다</span>
+                    </label>
+                </div>
+
+                <div class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                </div>
+
+                <button type="submit">가입하기</button>
+
+                <p class="login-link">
+                    이미 계정이 있으신가요? <a href="/login">로그인</a>
+                </p>
+            </form>
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+</body>
+</html>

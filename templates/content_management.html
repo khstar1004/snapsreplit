@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnapS - 콘텐츠 관리</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #e74c3c;
+            --text-color: #333;
+            --background-color: #f4f4f4;
+            --instagram-gradient: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            --instagram-color: #E1306C;
+            --thread-color: #000000;
+            --thread-gradient: linear-gradient(45deg, #1a1a1a 0%, #000000 100%);
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        header {
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 1rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        nav a {
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            margin: 0 0.5rem;
+            transition: color 0.3s;
+        }
+
+        nav a:hover, nav a.active {
+            color: var(--primary-color);
+        }
+
+        main {
+            padding: 2rem;
+            padding-top: 5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            margin-bottom: 2rem;
+        }
+
+        .platform-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .platform-buttons button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .platform-buttons button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .platform-buttons button.active {
+            background-color: #2980b9;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .convert-button {
+            background-color: var(--secondary-color) !important;
+        }
+
+        .convert-button:hover {
+            background-color: #c0392b !important;
+        }
+
+        .content-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .content-item {
+            background-color: var(--card-background);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .content-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .content-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .content-details {
+            padding: 1rem;
+        }
+
+        .content-details .keyword {
+            color: var(--primary-color);
+            font-size: 0.9rem;
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .content-details .sns {
+            font-size: 0.9rem;
+            margin: 0.5rem 0;
+            color: #666;
+        }
+
+        .content-details .date {
+            font-size: 0.8rem;
+            color: #999;
+            margin: 0;
+        }
+
+        #loading, #error-message {
+            text-align: center;
+            margin-top: 2rem;
+            display: none;
+            padding: 2rem;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        #error-message {
+            color: var(--secondary-color);
+            background-color: rgba(231, 76, 60, 0.1);
+            border-radius: 5px;
+            margin: 1rem 0;
+        }
+
+        .video-placeholder {
+            position: relative;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .video-placeholder::after {
+            content: '비디오';
+            font-size: 1.2rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .video-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .video-icon:hover {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        .video-icon::before {
+            content: '\25B6';
+            color: white;
+            font-size: 16px;
+        }
+
+        footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            nav {
+                margin-top: 1rem;
+                width: 100%;
+            }
+
+            nav a {
+                display: block;
+                margin: 0.5rem 0;
+                text-align: center;
+            }
+
+            .platform-buttons {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .platform-buttons button {
+                width: 100%;
+            }
+
+            .content-gallery {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+
+        .modal {
+            display: block;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 2% auto;
+            padding: 2rem;
+            width: 90%;
+            max-width: 1000px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .post-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .post-details img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        .details-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .caption {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .conversion-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .thread-management {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .stat-item {
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .thread-replies {
+            margin-top: 2rem;
+        }
+
+        .replies-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        /* Thread 관련 스타일 추가 */
+        .thread-post {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .thread-post .post-content {
+            margin-bottom: 1rem;
+        }
+
+        .thread-post .post-content img {
+            max-width: 100%;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+        }
+
+        .thread-post .post-stats {
+            display: flex;
+            gap: 1rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .thread-post .post-time {
+            color: #999;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .content-item[data-platform="thread"] {
+            border-left: 4px solid #000;
+        }
+
+        .content-item[data-platform="instagram"] {
+            border-left: 4px solid #E1306C;
+        }
+
+        /* Thread 피드 스타일 */
+        .thread-feed {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .thread-post {
+            background: white;
+            border: 1px solid #e1e1e1;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .username {
+            font-weight: bold;
+            color: #000;
+        }
+
+        .timestamp {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .post-content {
+            margin: 1rem 0;
+        }
+
+        .post-content p {
+            margin-bottom: 1rem;
+            white-space: pre-wrap;
+        }
+
+        .video-container {
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .video-container video {
+            width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+        }
+
+        .carousel-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+            scroll-snap-type: x mandatory;
+        }
+
+        .carousel-container img {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+            border-radius: 8px;
+            scroll-snap-align: start;
+        }
+
+        .post-stats {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+            color: #666;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .post-actions button {
+            background: #000;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .view-link {
+            color: #666;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+        }
+
+        .view-link:hover {
+            text-decoration: underline;
+        }
+
+        /* 컨텐츠 레이아웃 개선 */
+        .content-section {
+            margin: 2rem 0;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .load-more {
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .load-more:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* 게시물 그리드 레이아웃 */
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Thread 게시물 스타일 개선 */
+        .thread-post {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .thread-post:hover {
+            transform: translateY(-4px);
+        }
+
+        .thread-media {
+            margin: 1rem 0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .thread-media img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+
+        .thread-media video {
+            width: 100%;
+            border-radius: 12px;
+        }
+
+        .thread-carousel {
+            display: flex;
+            scroll-snap-type: x mandatory;
+            overflow-x: auto;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .thread-carousel img {
+            scroll-snap-align: start;
+            min-width: 280px;
+            height: 280px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        /* 페이지네이션 스타일 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 2rem 0;
+        }
+
+        .pagination button {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pagination button.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* 디자인 개선 */
+        .content-section {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .content-item {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .content-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+
+        .media-container {
+            position: relative;
+            padding-top: 100%;
+            overflow: hidden;
+            background: #f8f9fa;
+        }
+
+        .media-container img, 
+        .media-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .content-details {
+            padding: 1.5rem;
+        }
+
+        .caption {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 1rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .post-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+
+        .date {
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .actions button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .actions button:first-child {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .actions button:last-child {
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .actions button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        /* Thread 게시물 스타일 개선 */
+        .thread-post {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .thread-post:hover {
+            transform: translateY(-4px);
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .username {
+            font-weight: 600;
+            color: #1a1a1a;
+            font-size: 1.1rem;
+        }
+
+        .thread-media {
+            margin: 1rem -1.5rem;
+            position: relative;
+        }
+
+        .thread-media img,
+        .thread-media video {
+            width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+        }
+
+        .post-stats {
+            display: flex;
+            gap: 1.5rem;
+            margin: 1rem 0;
+            color: #666;
+        }
+
+        .post-stats span {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        /* 캐러셀 스타일 개선 */
+        .carousel {
+            position: relative;
+            margin: 1rem -1.5rem;
+        }
+
+        .carousel-container {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .carousel-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .carousel-item {
+            flex: 0 0 100%;
+            scroll-snap-align: start;
+            position: relative;
+        }
+
+        /* 로딩 애니메이션 개선 */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+        }
+
+        .loading::after {
+            content: '';
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 반응형 디자인 개선 */
+        @media (max-width: 768px) {
+            .content-section {
+                padding: 1rem;
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .thread-post {
+                margin: 1rem;
+            }
+
+            .actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .actions button {
+                width: 100%;
+            }
+        }
+
+        /* Instagram 섹션 스타일 */
+        #instagramSection .section-title {
+            color: var(--instagram-color);
+        }
+
+        #instagramSection .load-more {
+            border-color: var(--instagram-color);
+            color: var(--instagram-color);
+        }
+
+        #instagramSection .load-more:hover {
+            background: var(--instagram-gradient);
+            color: white;
+            border: none;
+        }
+
+        #instagramSection .content-item {
+            border: none;
+            position: relative;
+        }
+
+        #instagramSection .content-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--instagram-gradient);
+            border-radius: 16px 16px 0 0;
+        }
+
+        #instagramSection .actions button:first-child {
+            background: var(--instagram-gradient);
+            border: none;
+        }
+
+        #instagramSection .actions button:last-child {
+            border-color: var(--instagram-color);
+            color: var(--instagram-color);
+        }
+
+        #instagramSection .pagination button.active {
+            background: var(--instagram-gradient);
+        }
+
+        /* Thread 섹션 스타일 */
+        #threadSection .section-title {
+            color: var(--thread-color);
+        }
+
+        #threadSection .load-more {
+            border-color: var(--thread-color);
+            color: var(--thread-color);
+        }
+
+        #threadSection .load-more:hover {
+            background: var(--thread-color);
+            color: white;
+        }
+
+        #threadSection .content-item {
+            border: none;
+            position: relative;
+        }
+
+        #threadSection .content-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--thread-gradient);
+            border-radius: 16px 16px 0 0;
+        }
+
+        #threadSection .thread-post {
+            border-left: 4px solid var(--thread-color);
+        }
+
+        #threadSection .actions button:first-child {
+            background: var(--thread-color);
+        }
+
+        #threadSection .actions button:last-child {
+            border-color: var(--thread-color);
+            color: var(--thread-color);
+        }
+
+        #threadSection .pagination button.active {
+            background: var(--thread-color);
+        }
+
+        /* Thread 통계 섹션 스타일 */
+        .thread-management {
+            border-top: 4px solid var(--thread-color);
+        }
+
+        .thread-stats h3 {
+            color: var(--thread-color);
+        }
+
+        .stat-item {
+            border-left: 3px solid var(--thread-color);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-2px);
+        }
+
+        /* 플랫폼 버튼 스타일 개선 */
+        .platform-buttons button {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .platform-buttons button[onclick*="instagram"] {
+            background: var(--instagram-gradient);
+            color: white;
+        }
+
+        .platform-buttons button[onclick*="thread"] {
+            background: var(--thread-color);
+            color: white;
+        }
+
+        .platform-buttons button.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: currentColor;
+        }
+
+        /* 호버 효과 개선 */
+        .content-item {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        #instagramSection .content-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(225, 48, 108, 0.15);
+        }
+
+        #threadSection .content-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 미디어 컨테이너 스타일 개선 */
+        .media-container {
+            position: relative;
+            padding-top: 100%;
+            background: #fafafa;
+        }
+
+        .media-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.02);
+            pointer-events: none;
+        }
+
+        /* 반응형 디자인 개선 */
+        @media (max-width: 768px) {
+            .content-section {
+                margin: 1rem;
+            }
+
+            .platform-buttons {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .platform-buttons button {
+                flex: 1 1 calc(50% - 0.5rem);
+                min-width: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">SnapS</div>
+            <nav>
+                <a href="/">홈</a>
+                <a href="/content-conversion">콘텐츠 변환</a>
+                <a href="/content-management" class="active">콘텐츠 관리</a>
+                <a href="/statistics">통계 분석</a>
+                <a href="/my-page">마이페이지</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <h2>콘텐츠 관리</h2>
+        <div class="platform-buttons">
+            <button onclick="filterContent('all')" class="active">전체</button>
+            <button onclick="filterContent('instagram')">인스타그램</button>
+            <button onclick="filterContent('facebook')">페이스북</button>
+            <button onclick="filterContent('thread')">Thread</button>
+            <button onclick="filterContent('twitter')">트위터</button>
+            <button onclick="location.href='/instagram-converter'" class="convert-button">인스타그램 게시물 변환하기</button>
+        </div>
+
+        <div id="loading" style="display: none;">콘텐츠를 불러오는 중...</div>
+        <div id="error-message" style="display: none;"></div>
+
+        <!-- Instagram 섹션 -->
+        <section class="content-section" id="instagramSection">
+            <div class="section-header">
+                <h3 class="section-title">Instagram 게시물</h3>
+                <button class="load-more" onclick="loadMore('instagram')">더보기</button>
+            </div>
+            <div class="content-grid" id="instagramGrid"></div>
+            <div class="pagination" id="instagramPagination"></div>
+        </section>
+
+        <!-- Thread 섹션 -->
+        <section class="content-section" id="threadSection">
+            <div class="section-header">
+                <h3 class="section-title">Thread 게시물</h3>
+                <button class="load-more" onclick="loadMore('thread')">더보기</button>
+            </div>
+            <div class="content-grid" id="threadGrid"></div>
+            <div class="pagination" id="threadPagination"></div>
+        </section>
+
+        <!-- Thread 통계 섹션 -->
+        <div class="thread-management">
+            <div class="thread-stats">
+                <h3>Thread 통계</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-label">총 게시물</span>
+                        <span class="stat-value" id="threadPostCount">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">총 댓글</span>
+                        <span class="stat-value" id="threadReplyCount">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 SnapS. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const ITEMS_PER_PAGE = 6;
+        let currentInstagramPage = 1;
+        let currentThreadPage = 1;
+        let allPosts = {
+            instagram: [],
+            thread: []
+        };
+
+        // DOM이 완전히 로드된 후 실행
+        document.addEventListener('DOMContentLoaded', () => {
+            initializePage();
+        });
+
+        async function initializePage() {
+            showLoading();
+            try {
+                await Promise.all([
+                    fetchInstagramPosts(),
+                    loadThreadContent()
+                ]);
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function showLoading() {
+            const loading = document.getElementById('loading');
+            if (loading) loading.style.display = 'block';
+        }
+
+        function hideLoading() {
+            const loading = document.getElementById('loading');
+            if (loading) loading.style.display = 'none';
+        }
+
+        function showError(message) {
+            const errorElement = document.getElementById('error-message');
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+                setTimeout(() => {
+                    errorElement.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        async function fetchInstagramPosts() {
+            try {
+                const response = await fetch('/fetch_posts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to fetch Instagram posts');
+                }
+
+                allPosts.instagram = data.posts.map(post => ({
+                    ...post,
+                    platform: 'instagram'
+                }));
+                
+                displayInstagramPosts();
+                updatePagination('instagram');
+            } catch (err) {
+                showError(err.message);
+            }
+        }
+
+        function displayInstagramPosts() {
+            const grid = document.getElementById('instagramGrid');
+            if (!grid) return;
+
+            const startIdx = (currentInstagramPage - 1) * ITEMS_PER_PAGE;
+            const endIdx = startIdx + ITEMS_PER_PAGE;
+            const postsToShow = allPosts.instagram.slice(startIdx, endIdx);
+
+            if (postsToShow.length === 0) {
+                grid.innerHTML = '<div class="no-content">게시물이 없습니다.</div>';
+                return;
+            }
+
+            grid.innerHTML = postsToShow.map(post => `
+                <div class="content-item">
+                    <div class="media-container">
+                        ${getMediaHTML(post)}
+                    </div>
+                    <div class="content-details">
+                        <p class="caption">${post.caption || ''}</p>
+                        <div class="post-meta">
+                            <span class="date">${formatDate(post.timestamp)}</span>
+                            <div class="actions">
+                                <button onclick="convertPost('${post.id}')">변환</button>
+                                <button onclick="viewDetails('${post.id}')">상세보기</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterContent(platform) {
+            const sections = {
+                all: ['instagramSection', 'threadSection'],
+                instagram: ['instagramSection'],
+                thread: ['threadSection']
+            };
+
+            // 모든 섹션 숨기기
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.style.display = 'none';
+            });
+
+            // 선택된 섹션 보이기
+            (sections[platform] || []).forEach(sectionId => {
+                const section = document.getElementById(sectionId);
+                if (section) section.style.display = 'block';
+            });
+
+            // 버튼 활성화 상태 변경
+            document.querySelectorAll('.platform-buttons button').forEach(button => {
+                button.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        // 나짜 포맷팅 함수
+        function formatDate(timestamp) {
+            if (!timestamp) return '';
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            const seconds = Math.floor(diff / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+
+            if (days > 7) {
+                return date.toLocaleDateString('ko-KR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            } else if (days > 0) {
+                return `${days}일 전`;
+            } else if (hours > 0) {
+                return `${hours}시간 전`;
+            } else if (minutes > 0) {
+                return `${minutes}분 전`;
+            } else {
+                return '방금 전';
+            }
+        }
+
+        // 미디어 HTML 생성 함수
+        function getMediaHTML(post) {
+            if (!post) return '';
+            
+            if (post.media_type === 'VIDEO') {
+                return `
+                    <video controls poster="${post.thumbnail_url || ''}">
+                        <source src="${post.media_url}" type="video/mp4">
+                    </video>
+                `;
+            } else if (post.media_type === 'CAROUSEL_ALBUM' && post.carousel_media) {
+                return `
+                    <div class="carousel">
+                        ${post.carousel_media.map(url => `
+                            <img src="${url}" alt="Carousel image" onerror="this.src='/static/placeholder.png'">
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                return `
+                    <img src="${post.media_url || '/static/placeholder.png'}" 
+                         alt="Post image" 
+                         onerror="this.src='/static/placeholder.png'">
+                `;
+            }
+        }
+
+        // 더보기 함수
+        function loadMore(platform) {
+            if (platform === 'instagram') {
+                currentInstagramPage++;
+                displayInstagramPosts();
+            } else if (platform === 'thread') {
+                currentThreadPage++;
+                displayThreadPosts();
+            }
+            updatePagination(platform);
+        }
+
+        // 페이지네이션 업데이트 함수
+        function updatePagination(platform) {
+            const posts = allPosts[platform] || [];
+            const totalPages = Math.ceil(posts.length / ITEMS_PER_PAGE);
+            const paginationEl = document.getElementById(`${platform}Pagination`);
+            
+            if (!paginationEl) return;
+
+            let html = '';
+            for (let i = 1; i <= totalPages; i++) {
+                const currentPage = platform === 'instagram' ? currentInstagramPage : currentThreadPage;
+                html += `
+                    <button 
+                        onclick="changePage('${platform}', ${i})"
+                        class="${currentPage === i ? 'active' : ''}"
+                    >
+                        ${i}
+                    </button>
+                `;
+            }
+            paginationEl.innerHTML = html;
+        }
+
+        // 페이지 변경 함수
+        function changePage(platform, page) {
+            if (platform === 'instagram') {
+                currentInstagramPage = page;
+                displayInstagramPosts();
+            } else if (platform === 'thread') {
+                currentThreadPage = page;
+                displayThreadPosts();
+            }
+            updatePagination(platform);
+        }
+
+        // Thread 게시물 표시 함수
+        async function loadThreadContent() {
+            try {
+                const response = await fetch('/fetch_thread_posts');
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to fetch Thread posts');
+                }
+
+                allPosts.thread = data.posts.map(post => ({
+                    ...post,
+                    platform: 'thread',
+                    caption: post.text || '',
+                    media_url: post.media_url || null,
+                    timestamp: post.timestamp,
+                    id: post.id
+                }));
+
+                displayThreadPosts();
+                updatePagination('thread');
+                
+                // Thread 통계 업데이트
+                if (data.stats) {
+                    document.getElementById('threadPostCount').textContent = data.stats.total_posts || '0';
+                    document.getElementById('threadReplyCount').textContent = data.stats.total_replies || '0';
+                }
+            } catch (err) {
+                showError(err.message);
+            }
+        }
+
+        function displayThreadPosts() {
+            const grid = document.getElementById('threadGrid');
+            if (!grid) return;
+
+            const startIdx = (currentThreadPage - 1) * ITEMS_PER_PAGE;
+            const endIdx = startIdx + ITEMS_PER_PAGE;
+            const postsToShow = allPosts.thread.slice(startIdx, endIdx);
+
+            if (postsToShow.length === 0) {
+                grid.innerHTML = '<div class="no-content">Thread 게시물이 없습니다.</div>';
+                return;
+            }
+
+            grid.innerHTML = postsToShow.map(post => `
+                <div class="thread-post">
+                    <div class="post-header">
+                        <span class="username">@${post.username || 'user'}</span>
+                        <span class="timestamp">${formatDate(post.timestamp)}</span>
+                    </div>
+                    ${post.media_url ? `
+                        <div class="thread-media">
+                            ${getMediaHTML(post)}
+                        </div>
+                    ` : ''}
+                    <div class="post-content">
+                        <p>${post.caption}</p>
+                    </div>
+                    <div class="post-stats">
+                        <span>👍 ${post.likes || 0}</span>
+                        <span>💬 ${post.replies || 0}</span>
+                        <span>🔄 ${post.reposts || 0}</span>
+                    </div>
+                    <div class="post-actions">
+                        <button onclick="convertPost('${post.id}')">변환</button>
+                        ${post.permalink ? `
+                            <a href="${post.permalink}" target="_blank" class="view-link">
+                                Thread에서 보기
+                            </a>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 초기화 시 모든 섹션 표시
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.style.display = 'block';
+            });
+            initializePage();
+        });
+    </script>
+</body>
+</html>

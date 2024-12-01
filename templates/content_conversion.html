@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnapS - 콘텐츠 변환</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #e74c3c;
+            --text-color: #333;
+            --background-color: #f4f6f9;
+            --sidebar-width: 240px;
+            --header-height: 60px;
+            --border-radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 사이드바 스타일 */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: white;
+            padding: 2rem 0;
+            border-right: 1px solid #eee;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .user-profile {
+            padding: 0 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 500;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-info h3 {
+            font-size: 1rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .user-info p {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background: rgba(74, 144, 226, 0.1);
+            color: var(--primary-color);
+        }
+
+        .sidebar-menu a svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* 메인 콘텐츠 영역 */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            color: var(--text-color);
+        }
+
+        /* 콘텐츠 변환 폼 */
+        .conversion-form {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.8rem;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .form-group textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 1rem;
+            border: 1px solid #e1e1e1;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            line-height: 1.6;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        /* 플랫폼 선택 버튼 */
+        .platform-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .platform-button {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            border: 1px solid #e1e1e1;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 160px;
+            color: #666;
+        }
+
+        .platform-button:hover {
+            color: var(--primary-color);
+        }
+
+        .platform-button.active {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            background: #f0f7ff;
+        }
+
+        /* 플랫폼 아이콘 스타일 */
+        .platform-icon {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .platform-name {
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        /* 변환 버튼 */
+        .convert-button {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .convert-button:hover {
+            background: #357abd;
+            transform: translateY(-2px);
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 80px;
+                padding: 1rem 0;
+            }
+
+            .sidebar .user-info,
+            .sidebar .menu-text {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 80px;
+            }
+
+            .platform-buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .platform-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 모달 스타일 개선 */
+        .conversion-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            width: 90%;  /* 더 넓게 조정 */
+            max-width: 1200px;  /* 최대 너비 증가 */
+            height: 90vh;  /* 높이 증가 */
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        /* 닫기 버튼 스타일 개선 */
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #495057;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: #e9ecef;
+            color: #212529;
+            transform: translateY(-1px);
+        }
+
+        .close-icon {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .close-text {
+            font-weight: 500;
+        }
+
+        /* 모달 내용 여백 조정 */
+        .modal-content {
+            padding-top: 60px;  /* 닫기 버튼을 위한 여백 확보 */
+        }
+
+        /* 플랫폼 프리뷰 스타일 개선 */
+        .platform-preview {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .platform-preview:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .preview-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .preview-platform-icon {
+            width: 32px;
+            height: 32px;
+            fill: currentColor;
+        }
+
+        .preview-platform-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #343a40;
+        }
+
+        .preview-content {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #495057;
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+        }
+
+        /* 버튼 스타일 개선 */
+        .preview-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .preview-button {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .preview-button.copy {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .preview-button.close {
+            background: #f1f1f1;
+            color: #333;
+        }
+
+        /* 로딩 스피너 스타일 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #4a90e2;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 게시 버튼 스타일 */
+        .preview-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .preview-button.post {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .preview-button.post:hover {
+            background: #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <!-- 로딩 오버레이 추가 -->
+    <div class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- 사이드바 -->
+    <aside class="sidebar">
+        <div class="user-profile">
+            <div class="profile-icon">A</div>
+            <div class="user-info">
+                <h3>@asdf123</h3>
+                <p>일반 회원</p>
+            </div>
+        </div>
+
+        <ul class="sidebar-menu">
+            <li>
+                <a href="/content-conversion" class="active">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/>
+                        <path d="M7 12h2v5H7zm4-3h2v8h-2zm4-3h2v11h-2z"/>
+                    </svg>
+                    <span class="menu-text">콘텐츠 변환</span>
+                </a>
+            </li>
+            <li>
+                <a href="/instagram">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                    <span class="menu-text">Instagram</span>
+                </a>
+            </li>
+            <li>
+                <a href="/facebook">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                    <span class="menu-text">Facebook</span>
+                </a>
+            </li>
+            <li>
+                <a href="/thread">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                    </svg>
+                    <span class="menu-text">Thread</span>
+                </a>
+            </li>
+            <li>
+                <a href="/blog">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V7h14v12zM7 9h10v2H7zm0 4h7v2H7z"/>
+                    </svg>
+                    <span class="menu-text">Blog</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="main-content">
+        <h1 class="page-title">콘텐츠 변환하기</h1>
+        
+        <div class="conversion-form">
+            <form id="conversionForm">
+                <div class="form-group">
+                    <label for="originalContent">변환할 콘텐츠 내용을 입력해주세요.</label>
+                    <textarea id="originalContent" placeholder="여기에 원본 콘텐츠를 입력하세요..."></textarea>
+                </div>
+
+                <div class="platform-buttons">
+                    <button type="button" class="platform-button" data-platform="Instagram">
+                        <svg class="platform-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                        <span class="platform-name">Instagram</span>
+                    </button>
+                    <button type="button" class="platform-button" data-platform="Facebook">
+                        <svg class="platform-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                        </svg>
+                        <span class="platform-name">Facebook</span>
+                    </button>
+                    <button type="button" class="platform-button" data-platform="Thread">
+                        <svg class="platform-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.5 12.186c0-3.401.85-6.254 2.495-8.305C5.845 1.577 8.598.396 12.179.373h.007c3.581.024 6.334 1.205 8.184 3.509 1.645 2.05 2.495 4.904 2.495 8.304 0 3.401-.85 6.254-2.495 8.305-1.85 2.304-4.603 3.485-8.184 3.509zm-.716-9.596c-.195 0-.384.06-.544.172l-3.679 2.534c-.182.126-.288.332-.288.548 0 .37.303.673.673.673h.005l1.08-.001v2.767c0 .37.302.673.673.673h3.924c.37 0 .673-.302.673-.673v-2.767h1.08c.37 0 .673-.302.673-.673 0-.216-.106-.422-.288-.548l-3.679-2.534c-.16-.112-.349-.172-.544-.172zm.716-9.716c-2.745.018-4.859.967-6.287 2.819-1.32 1.645-2.002 3.972-2.002 6.679 0 2.706.682 5.033 2.002 6.679.314.391.659.742 1.031 1.054l4.123-2.841c.175-.121.38-.185.591-.185.211 0 .416.064.591.185l4.123 2.841c.372-.312.717-.663 1.031-1.054 1.32-1.645 2.002-3.972 2.002-6.679 0-2.706-.682-5.033-2.002-6.679-1.428-1.852-3.542-2.801-6.287-2.819h-.003z"/>
+                        </svg>
+                        <span class="platform-name">Thread</span>
+                    </button>
+                    <button type="button" class="platform-button" data-platform="Blog">
+                        <svg class="platform-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM7 7h10v2H7V7zm0 4h10v2H7v-2zm0 4h7v2H7v-2z"/>
+                        </svg>
+                        <span class="platform-name">네이버 블로그</span>
+                    </button>
+                </div>
+
+                <button type="button" class="convert-button" onclick="convertContent()">선택한 SNS 형식으로 변환하기</button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        let selectedPlatforms = new Set();
+
+        // 플랫폼 선택 토글 함수
+        function togglePlatform(button) {
+            button.classList.toggle('active');
+        }
+
+        // 로딩 표시 함수
+        function showLoading() {
+            document.querySelector('.loading-overlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.querySelector('.loading-overlay').style.display = 'none';
+        }
+
+        // 콘텐츠 변환 함수 수정
+        async function convertContent() {
+            try {
+                showLoading();
+                
+                // ID를 originalContent로 수정
+                const content = document.getElementById('originalContent').value;
+                // active 클래스를 가진 버튼들에서 플랫폼 정보 추출
+                const selectedPlatforms = Array.from(document.querySelectorAll('.platform-button.active'))
+                    .map(button => button.dataset.platform);
+
+                if (!content) {
+                    alert('변환할 콘텐츠를 입력해주세요.');
+                    hideLoading();
+                    return;
+                }
+
+                if (selectedPlatforms.length === 0) {
+                    alert('변환할 플랫폼을 선택해주세요.');
+                    hideLoading();
+                    return;
+                }
+
+                const response = await fetch('/convert_all', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        caption: content,
+                        platforms: selectedPlatforms
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                hideLoading();
+                
+                if (data.success && data.conversions) {
+                    showConversionResults(data.conversions);
+                } else {
+                    alert(data.error || '변환 중 오류가 발생했습니다.');
+                }
+            } catch (error) {
+                hideLoading();
+                console.error('Conversion error:', error);
+                alert('변환 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 결시물 업로드 함수
+        async function postToSNS(platform, content) {
+            try {
+                showLoading();
+                let endpoint;
+                
+                switch(platform) {
+                    case 'Thread':
+                        endpoint = '/upload_to_thread';
+                        break;
+                    case 'Instagram':
+                        endpoint = '/upload_to_instagram';
+                        break;
+                    case 'Facebook':
+                        endpoint = '/upload_to_facebook';
+                        break;
+                    case '네이버 블로그':
+                        endpoint = '/upload_to_blog';
+                        break;
+                    default:
+                        throw new Error('지원하지 않는 플랫폼입니다.');
+                }
+
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        content: content,
+                        media_type: 'TEXT'
+                    })
+                });
+
+                const data = await response.json();
+                hideLoading();
+
+                if (data.success) {
+                    alert(`${platform}에 성공적으로 게시되었습니다!`);
+                } else {
+                    throw new Error(data.error || '게시 실패');
+                }
+            } catch (error) {
+                hideLoading();
+                alert(`${platform} 게시 실패: ${error.message}`);
+            }
+        }
+
+        // 결과 표시 함수 수정
+        function showConversionResults(conversions) {
+            const modal = document.createElement('div');
+            modal.className = 'conversion-modal';
+            
+            // SVG 아이콘 매핑
+            const svgMapping = {
+                'Instagram': `<svg class="preview-platform-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>`,
+                'Facebook': `<svg class="preview-platform-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>`,
+                'Thread': `<svg class="preview-platform-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.5 12.186c0-3.401.85-6.254 2.495-8.305C5.845 1.577 8.598.396 12.179.373h.007c3.581.024 6.334 1.205 8.184 3.509 1.645 2.05 2.495 4.904 2.495 8.304 0 3.401-.85 6.254-2.495 8.305-1.85 2.304-4.603 3.485-8.184 3.509z"/>
+                </svg>`,
+                '네이버 블로그': `<svg class="preview-platform-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM7 7h10v2H7V7zm0 4h10v2H7v-2zm0 4h7v2H7v-2z"/>
+                </svg>`
+            };
+            
+            let previewsHtml = '';
+            Object.entries(conversions).forEach(([platform, content]) => {
+                // HTML 이스케이프 처리
+                const escapedContent = content
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;')
+                    .replace(/\n/g, '<br>');
+
+                previewsHtml += `
+                    <div class="platform-preview">
+                        <div class="preview-header">
+                            ${svgMapping[platform] || ''}
+                            <span class="preview-platform-name">${platform}</span>
+                        </div>
+                        <div class="preview-content">${escapedContent}</div>
+                        <div class="preview-actions">
+                            <button class="preview-button copy" onclick="copyContent(this)">복사하기</button>
+                            <button class="preview-button post" onclick="postToSNS('${platform}', '${escapedContent}')">
+                                바로 게시하기
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <button class="modal-close" onclick="closeModal(this)">×</button>
+                    <div class="platform-preview-container">
+                        ${previewsHtml}
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+        }
+
+        // 이벤트 리스너 등록
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.platform-button').forEach(button => {
+                button.addEventListener('click', () => togglePlatform(button));
+            });
+        });
+
+        function copyContent(button) {
+            const content = button.parentElement.previousElementSibling.textContent;
+            navigator.clipboard.writeText(content);
+            button.textContent = '복사됨!';
+            setTimeout(() => {
+                button.textContent = '복사하기';
+            }, 2000);
+        }
+
+        function closeModal(button) {
+            button.closest('.conversion-modal').remove();
+        }
+    </script>
+</body>
+</html>

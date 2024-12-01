@@ -1,0 +1,135 @@
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+header {
+    background-color: #333;
+    color: #fff;
+    padding: 1rem;
+    text-align: center;
+}
+
+nav {
+    margin-top: 1rem;
+}
+
+nav button {
+    background-color: #444;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    margin: 0 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+nav button:hover, nav button.active {
+    background-color: #666;
+}
+
+main {
+    padding: 2rem;
+}
+
+.container {
+    background-color: #fff;
+    border-radius: 5px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.features {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.feature-card {
+    flex-basis: calc(33.333% - 1rem);
+    background-color: #fff;
+    border-radius: 5px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+}
+
+.feature-card h3 {
+    color: #333;
+}
+
+.feature-card button {
+    background-color: #333;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    margin-top: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.feature-card button:hover {
+    background-color: #555;
+}
+
+footer {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 1rem;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+.statistics-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.stat-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px;
+}
+
+.stat-card h3 {
+    margin-top: 0;
+    color: #333;
+}
+
+#popularHashtags {
+    list-style-type: none;
+    padding: 0;
+}
+
+#popularHashtags li {
+    background-color: #f0f0f0;
+    border-radius: 20px;
+    padding: 5px 10px;
+    margin: 5px 0;
+    display: inline-block;
+}
+
+#recentActivity {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#recentActivity th, #recentActivity td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+#recentActivity th {
+    background-color: #f2f2f2;
+}
